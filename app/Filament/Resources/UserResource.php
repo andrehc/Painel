@@ -7,11 +7,11 @@ use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Collection;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
 {
@@ -23,7 +23,33 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Section::make('User Information')
+                    ->description('User informations is here.')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->autofocus()
+                            ->required()
+                            ->placeholder('User name'),
+                        Forms\Components\TextInput::make('email')
+                            ->email()
+                            ->required()
+                            ->placeholder('User email'),
+                        Forms\Components\TextInput::make('phone')
+                            ->tel()
+                            ->maxLength(20),
+                        Forms\Components\Toggle::make('active')
+                            ->default(true),
+                        Forms\Components\Toggle::make('is_admin')
+                            ->default(false),
+                        Forms\Components\TextInput::make('avatar')
+                            ->autofocus()
+                    ]),
+                Forms\Components\Section::make('Users Authentication')
+                    ->description('User password section.')
+                    ->schema([
+                        Forms\Components\TextInput::make('password')->password()->confirmed()->required(),
+                        Forms\Components\TextInput::make('password_confirmation')->password()->label('Confirm Password')
+                    ]),
             ]);
     }
 
@@ -31,7 +57,18 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\ImageColumn::make('avatar')
+                    ->circular(),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('phone')
+                    ->searchable(),
+                Tables\Columns\ToggleColumn::make('active')
+                    ->label('Edit Active')
             ])
             ->filters([
                 //
@@ -41,7 +78,15 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make('Deactivate')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->action(fn(Collection $users)=> $users->each->update(['active' => false]))
+                    ->after(fn()=> Notificationion::make()
+                        ->title('Saved successfully')
+                        ->success()
+                        ->send()
+                    )
                 ]),
             ]);
     }
