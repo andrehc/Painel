@@ -47,4 +47,6 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // TODO: implementar metodo pra validar o login apenas pra usuario ativo;
 }

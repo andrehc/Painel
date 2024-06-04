@@ -67,6 +67,8 @@ class UserResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
+                Tables\Columns\BooleanColumn::make('is_admin')
+                    ->sortable(),
                 Tables\Columns\ToggleColumn::make('active')
                     ->label('Edit Active')
             ])
@@ -82,7 +84,7 @@ class UserResource extends Resource
                         ->color('warning')
                         ->requiresConfirmation()
                         ->action(fn(Collection $users)=> $users->each->update(['active' => false]))
-                    ->after(fn()=> Notificationion::make()
+                        ->after(fn()=> Notificationion::make()
                         ->title('Saved successfully')
                         ->success()
                         ->send()
