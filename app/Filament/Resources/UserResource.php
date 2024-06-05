@@ -11,6 +11,7 @@ use Filament\Notifications\Collection;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class UserResource extends Resource
@@ -73,7 +74,7 @@ class UserResource extends Resource
                     ->label('Edit Active')
             ])
             ->filters([
-                //
+                TernaryFilter::make('is_admin')
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -84,9 +85,9 @@ class UserResource extends Resource
                         ->color('warning')
                         ->requiresConfirmation()
                         ->action(fn(Collection $users)=> $users->each->update(['active' => false]))
-                        ->after(fn()=> Notificationion::make()
+                        ->after(fn()=> Notification::make()
                         ->title('Saved successfully')
-                        ->success()
+                        ->warning()
                         ->send()
                     )
                 ]),
